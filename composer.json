@@ -1,0 +1,15 @@
+{
+    "name": "dani/editor_img",
+    "autoload": {
+        "psr-4": {
+            "Dani\\EditorImg\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "mehdi bakhshi",
+            "email": "mehdi.1993.dev@gmail.com"
+        }
+    ],
+    "require": {}
+}
