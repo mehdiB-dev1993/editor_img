@@ -2,7 +2,7 @@
     "name": "dani/editor_img",
     "autoload": {
         "psr-4": {
-            "Dani\\EditorImg\\": "src/"
+            "App\\": "App/"
         }
     },
     "authors": [
