@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Classes\View;
+
 class HomeController
 {
 
@@ -11,7 +13,8 @@ class HomeController
     }
     public function index()
     {
-        echo 'home cosntroller and index method';
+        View::make('index',['test','test2']);
+
     }
 
 }
