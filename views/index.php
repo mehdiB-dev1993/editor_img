@@ -3,75 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
-    <!-- Bootstrap CSS -->
+    <title>editor_img</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <link rel="stylesheet" href="../Assets/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/emoji-mart/css/emoji-mart.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
+
 
 </head>
 <body>
 
-<div class="container mt-5">
+<!----------------------------->
+<div class="container">
 
-    <form action="" method="POST" enctype="multipart/form-data">
-        <div class="mb-3">
-            <input class="form-control" type="file" id="img" name="image" accept="image/*">
+    <div class="row h-100">
+        <!----------------------------->
+        <div class="col-4 box-form">
+            <form id="store-image" action="">
+                <input class="form-control" type="file" id="img" name="image" accept="image/*">
+                <button class="btn w-100 btn-success mt-4" type="submit">ذخیره</button>
+            </form>
         </div>
+        <!----------------------------->
+        <div class="col-8 box">
+            <div class="box-preview">
+                <img id="preview" src="" alt="">
+                <canvas style="display: none" id="canvas"></canvas>
 
-
-        <div class="box mb-3 position-relative">
-            <div class="cover d-none">
-                <div class="tools">
-                    <i class="bi bi-crop"></i>
-                </div>
             </div>
-            <img id="preview" src="#"  class="img-fluid" style="display:none; max-width: 100%; height: auto;">
         </div>
+        <!----------------------------->
 
-        <button type="submit" class="btn btn-primary btn-block w-100">آپلود تصویر</button>
-    </form>
+
+    </div>
+
+
+
+    <div class="row">
+        <div class="col-12 p-0">
+            <div class="tools">
+                <i class="bi bi-crop" title="crub"></i>
+                <i class="bi bi-brightness-high-fill" title="brightness"></i>
+                <i class="bi bi-pencil-square" title="char"></i>
+            </div>
+        </div>
+    </div>
+
+
+
+
 </div>
+<!----------------------------->
+
+
+
+
+
+
+
+
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js" integrity="sha256-9zljDKpE/mQxmaR4V2cGVaQ7arF3CcXxarvgr7Sj8Uc=" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-
-<script>
-
-
-    $('#img').on('change', function(event) {
-
-        const $file = event.target.files[0];
-
-        if ($file && $file.type.startsWith('image/')) {
-            const reader = new FileReader();
-
-            reader.onload = function(e) {
-                $('#preview').attr('src', e.target.result).show();
-            };
-
-            reader.readAsDataURL($file);
-        } else {
-            alert('خطا در انتخاب تصویر');
-        }
-    });
-
-
-    $('.box').hover(
-        function () {
-            $(this).find('.cover').removeClass('d-none')
-            $(this).find('.cover').addClass('d-block')
-            $(this).find('.cover').addClass('mask')
-        },
-        function () {
-            $(this).find('.cover').removeClass('d-block')
-            $(this).find('.cover').addClass('d-none')
-            $(this).find('.cover').removeClass('mask');
-        }
-    );
-
-
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script src="../Assets/inputEmoji.js"></script>
+<script src="../Assets/script.js"></script>
 
 </body>
 </html>
