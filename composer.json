@@ -11,5 +11,7 @@
             "email": "mehdi.1993.dev@gmail.com"
         }
     ],
-    "require": {}
+    "require": {
+      "ext-pdo": "*"
+    }
 }

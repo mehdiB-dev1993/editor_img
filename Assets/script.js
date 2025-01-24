@@ -130,6 +130,7 @@ $('body').on('submit', '#store-image', function (e) {
         type: 'POST',
         data: { image: imageData },
         success: function (response) {
+            console.log(response)
             var $response = JSON.parse(response)
 
         if ($response.success === true)

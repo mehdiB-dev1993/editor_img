@@ -3,14 +3,16 @@
 namespace App\Controllers;
 
 use App\Classes\View;
+use App\Models\Home;
 
 
 class HomeController
 {
+    public $model;
 
     public function __construct()
     {
-
+        $this->model = new Home();
     }
     public function index()
     {
@@ -32,6 +34,9 @@ class HomeController
                 $fileName = 'Storage/' . uniqid() . '.' . $fileExtension;
 
                 file_put_contents($fileName, $imageData);
+
+                $this->model->store(['title' => $fileName, 'source' => $fileName]);
+
                 echo json_encode([
                     'success' => true,
                     'url' => $fileName,
