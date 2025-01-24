@@ -383,6 +383,13 @@ function getMousePosition(event) {
 /*************************************/
 
 
+$(function () {
+    $('input[name=emoji]').emoji({
+        fontSize: '20px'
+    });
+})
+
+
 
 
 
