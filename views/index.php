@@ -23,17 +23,33 @@
         <!----------------------------->
         <div class="col-4 box-form">
             <form id="store-image" action="">
-                <input class="form-control" type="file" id="img" name="image" accept="image/*">
+                <input class="form-control" type="file" id="imageInput" name="image" accept="image/*">
                 <button class="btn w-100 btn-success mt-4" type="submit">ذخیره</button>
             </form>
         </div>
         <!----------------------------->
         <div class="col-8 box">
             <div class="box-preview">
-                <img id="preview" src="" alt="">
-                <canvas style="display: none" id="canvas"></canvas>
+
+                <canvas  id="canvas"></canvas>
 
             </div>
+
+            <div class="tool-bag">
+                <div class="box-color d-none">
+                    <input type="color" id="colorPicker" style="margin-top: 10px;" />
+                    <button id="applyColor">اعمال رنگ</button>
+                </div>
+
+                <form id="box-char-emoji" class="box-char-emoji d-none" style="display: flex; gap: 10px; margin-top: 10px;">
+                    <input type="text" name="emoji" id="sticker-text" placeholder="متن یا ایموجی را وارد کنید" required>
+                    <button type="submit" id="emoji-button">اضافه کردن</button>
+                </form>
+
+
+            </div>
+
+
         </div>
         <!----------------------------->
 
@@ -45,9 +61,11 @@
     <div class="row">
         <div class="col-12 p-0">
             <div class="tools">
-                <i class="bi bi-crop" title="crub"></i>
-                <i class="bi bi-brightness-high-fill" title="brightness"></i>
-                <i class="bi bi-pencil-square" title="char"></i>
+                <button class="btn bi bi-crop" title="crub"></button>
+                <button class="btn bi bi-brightness-high-fill" title="brightness"></button>
+                <button class="btn bi bi-pencil-square" title="char"></button>
+                <button class="btn bi bi-scissors"></button>
+
             </div>
         </div>
     </div>

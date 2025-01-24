@@ -1,303 +1,392 @@
+const $imageInput = document.getElementById("imageInput");
+const $canvas = document.getElementById("canvas");
+const $ctx = $canvas.getContext("2d");
+let $originalImageData;
 
-$(document).ready(function ()
-{
 
-    function getCanvas()
-    {
-        return  document.getElementById('canvas');
-    }
 
-    function loadPreview($file)
-    {
-        const $reader = new FileReader();
-        $reader.onload = function (e) {
+$imageInput.addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
 
-            $('#preview').attr('src', e.target.result).show();
+                $canvas.width = img.width;
+                $canvas.height = img.height;
 
-            $img = new Image();
+                $ctx.drawImage(img, 0, 0, img.width, img.height);
 
-            $img.onload = function () {
-                $canvas = getCanvas()
-                const ctx = $canvas.getContext('2d');
 
-                $canvas.width = $img.width;
-                $canvas.height = $img.height;
-
-                ctx.drawImage($img, 0, 0);
+                $originalImageData = $ctx.getImageData(0, 0, $canvas.width, $canvas.height);
             };
-
-            $img.src = e.target.result;
+            img.src = e.target.result;
         };
-        $reader.readAsDataURL($file);
-
+        reader.readAsDataURL(file);
     }
-    /*************************************/
-    $('#img').on('change', function (event) {
-        const $file = event.target.files[0];
-        loadPreview($file)
+});
 
-    });
+/*************************************/
+let cropper = null;
+let $brightness;
+let $contrast
+/*************************************/
+$('.bi-crop').on('click',function (e) {
+    var $this = $(this)
 
-
-    /*************************************/
-
-    var cropper;
-    var $brightness;
-    var $contrast;
-    var $img;
-
-    /*************************************/
-    $('.bi-crop').on('click',function (e)
+    if ($this.hasClass('show'))
     {
-        var $this = $(this)
-        if ($this.hasClass('show'))
-        {
-            $this.removeClass('show')
-            if (cropper) {
-                cropper.destroy()
-                cropper = null
-            }
+        $this.removeClass('show')
+        $('.tools').find('button').attr('disabled',false)
 
-        }
-        else
-        {
-            $this.addClass('show')
-            const $img = document.getElementById('preview')
-            cropper = new Cropper($img, {
-                aspectRatio: 1,
-                viewMode: 1,
-                autoCropArea: 1,
-                responsive: true,
-            })
-        }
-
-    })
-    /*************************************/
-
-    function generateImageData()
-    {
-        var $imageData;
 
         if (cropper) {
-            const canvas = cropper.getCroppedCanvas({
-                width: cropper.getImageData().naturalWidth,
-                height: cropper.getImageData().naturalHeight
-            });
-
-            const context = canvas.getContext('2d');
-
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = canvas.height;
-            const tempContext = tempCanvas.getContext('2d');
-
-
-            tempContext.drawImage(canvas, 0, 0);
-
-
-            context.clearRect(0, 0, canvas.width, canvas.height);
-            context.filter = `brightness(${parseFloat($brightness)}%) contrast(${parseFloat($contrast)}%)`;
-            context.drawImage(tempCanvas, 0, 0);
-
-            $imageData = canvas.toDataURL()
-
+            cropper.destroy()
+            cropper = null
         }
-        else {
-
-
-            $imageData = $canvas.toDataURL('image/png');
-
-
-        }
-
-        return $imageData
 
     }
+    else
+    {
+        $this.addClass('show')
+        $('.tools').find('button').attr('disabled',true)
+        $this.attr('disabled',false)
+
+        cropper = new Cropper($canvas, {
+            aspectRatio: 1,
+            viewMode: 1,
+            autoCropArea: 1,
+            responsive: true,
+        })
+    }
+
+})
+/*************************************/
+function appendCharToCanvas(canvasToDraw)
+{
+    const ctx = canvasToDraw.getContext('2d');
 
 
-
-    $('body').on('submit','#store-image',function (e) {
-        e.preventDefault()
-
-        $.ajax({
-            url: 'http://editor.local/store',
-            type: 'POST',
-            data: {image: generateImageData()},
-            success: function (response) {
-                console.log(response)
-            },
-            error: function (error) {
-                console.log('خطا در ارسال تصویر:', error);
-            }
-        });
+    const canvasWidth = canvasToDraw.width;
+    const canvasHeight = canvasToDraw.height;
+    const previewWidth = $('.box-preview').width();
+    const previewHeight = $('.box-preview').height();
 
 
-
-    })
-
-
-
-    /*************************************/
+    const scaleX = canvasWidth / previewWidth;
+    const scaleY = canvasHeight / previewHeight;
 
 
-    $('.bi-brightness-high-fill').on('click',function (e)
+    $('.draggable-text').each(function () {
+        const $this = $(this);
+        const text = $this.text();
+
+
+        const fontSize = parseFloat($this.css('font-size'));
+        const fontFamily = $this.css('font-family');
+        const color = $this.css('color');
+        const fontWeight = $this.css('font-weight');
+        const fontStyle = $this.css('font-style');
+        const lineHeight = parseFloat($this.css('line-height')) || fontSize;
+
+        // مختصات دقیق متن در پیش‌نمایش
+        const offset = $this.offset();
+        const containerOffset = $('.box-preview').offset();
+
+
+        const previewX = offset.left - containerOffset.left + parseFloat($this.css('padding-left'));
+        const previewY = offset.top - containerOffset.top + parseFloat($this.css('padding-top'));
+
+
+        const x = previewX * scaleX;
+        const y = previewY * scaleY;
+
+
+        const scaledFontSize = fontSize * Math.min(scaleX, scaleY);
+
+
+        ctx.font = `${fontStyle} ${fontWeight} ${scaledFontSize}px ${fontFamily}`;
+        ctx.fillStyle = color;
+        ctx.textBaseline = 'alphabetic';
+
+
+        ctx.fillText(text, x, y + scaledFontSize / 4);
+    });
+}
+$('body').on('submit', '#store-image', function (e) {
+    e.preventDefault();
+
+
+    let canvasToDraw = cropper ? cropper.getCroppedCanvas() : $canvas;
+    appendCharToCanvas(canvasToDraw)
+
+
+    const imageData = canvasToDraw.toDataURL("image/png");
+
+
+    $.ajax({
+        url: 'http://editor.local/store',
+        type: 'POST',
+        data: { image: imageData },
+        success: function (response) {
+            var $response = JSON.parse(response)
+
+        if ($response.success === true)
+        {
+            $('.box-preview').find('.draggable-text').remove()
+            window.location = $response.url
+        }else
+        {
+            alert($response.message)
+        }
+
+        },
+        error: function (error) {
+            console.log('خطا در ارسال تصویر:', error);
+        }
+    });
+});
+
+
+/*************************************/
+$('.bi-brightness-high-fill').on('click',function (e)
     {
         var $this = $(this)
         if ($this.hasClass('show'))
         {
             $this.removeClass('show')
-            $('.box').find('.brightness-box').remove()
-            $('.box').find('.contrast-box').remove()
+            $('.tool-bag').find('.brightness-box').remove()
+            $('.tool-bag').find('.contrast-box').remove()
 
         }
         else
-        {
+        { $('.tools button').removeClass('show')
             $this.addClass('show')
             var $brightness_tag = '<div class="mb-3 brightness-box"><label for="brightness" class="form-label">روشنایی</label><input type="range" id="brightness" class="form-range slider" min="0" max="200" value="100"></div>'
             var $contrast_tag = '<div class="mb-3 contrast-box"><label for="contrast" class="form-label">کنتراست</label><input type="range" id="contrast" class="form-range slider" min="0" max="200" value="100"></div>'
-            $('.box').append($brightness_tag)
-            $('.box').append($contrast_tag)
+            $('.tool-bag').append($brightness_tag)
+            $('.tool-bag').append($contrast_tag)
         }
 
     }
-    )
-
-    $('body').on('change','#brightness, #contrast',function (e)
-    {
-        applyFilters()
-    })
+)
+/*************************************/
 
 
-    function applyFilters() {
-        $brightness = $('#brightness').val();
-        $contrast = $('#contrast').val();
-        if (cropper)
-        {
-            $('.cropper-container').css({
-                filter: `brightness(${$brightness}%) contrast(${$contrast}%)`
-            });
-        }else
-        {
-            $('#preview').css({
-            filter: `brightness(${$brightness}%) contrast(${$contrast}%)`
-            });
+$(document).on("input", "#brightness, #contrast", function () {
+    const brightness = parseInt($("#brightness").val()) || 100;
+    const contrast = parseInt($("#contrast").val()) || 100;
 
-            adjustBrightnessAndContrast($brightness - 100, $contrast - 100);
+    $brightness = brightness;
+    $contrast = contrast;
 
+    if (cropper) {
+        // اگر Cropper فعال است
+        const croppedCanvas = cropper.getCroppedCanvas(); // گرفتن canvas برش‌خورده
+        const croppedCtx = croppedCanvas.getContext("2d"); // گرفتن context برش‌خورده
+        const croppedImageData = croppedCtx.getImageData(0, 0, croppedCanvas.width, croppedCanvas.height);
+
+        // اعمال روشنایی و کنتراست به تصویر برش‌خورده
+        const updatedImageData = applyBrightnessAndContrast(croppedImageData, brightness, contrast);
+
+        // بازنویسی تصویر روی canvas برش‌خورده
+        croppedCtx.putImageData(updatedImageData, 0, 0);
+
+        // بازنویسی تصویر برش‌خورده روی canvas اصلی
+        $ctx.clearRect(0, 0, $canvas.width, $canvas.height); // پاک‌کردن canvas
+        $canvas.width = croppedCanvas.width;
+        $canvas.height = croppedCanvas.height;
+        $ctx.drawImage(croppedCanvas, 0, 0); // رسم تصویر نهایی برش‌خورده روی canvas اصلی
+    } else {
+
+        if (!$originalImageData) {
+            console.error("داده اصلی تصویر در دسترس نیست!");
+            return;
         }
 
+
+        const imageDataCopy = new ImageData(
+            new Uint8ClampedArray($originalImageData.data),
+            $originalImageData.width,
+            $originalImageData.height
+        );
+
+
+        const updatedImageData = applyBrightnessAndContrast(imageDataCopy, brightness, contrast);
+
+
+        $ctx.putImageData(updatedImageData, 0, 0);
+    }
+});
+
+function applyBrightnessAndContrast(imageData, brightness, contrast) {
+    const data = imageData.data;
+
+    const brightnessOffset = (brightness - 100) * 2.55;
+    const contrastFactor = (contrast - 100) / 100 + 1;
+
+    for (let i = 0; i < data.length; i += 4) {
+
+        data[i] = Math.min(255, Math.max(0, contrastFactor * (data[i] - 128) + 128 + brightnessOffset));
+        data[i + 1] = Math.min(255, Math.max(0, contrastFactor * (data[i + 1] - 128) + 128 + brightnessOffset));
+        data[i + 2] = Math.min(255, Math.max(0, contrastFactor * (data[i + 2] - 128) + 128 + brightnessOffset));
     }
 
+    return imageData;
+}
+
+/*************************************/
+$('.bi-pencil-square').on('click', function (e) {
 
 
-    const adjustBrightnessAndContrast = (brightness, contrast) => {
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
+    var $this = $(this);
+    if ($this.hasClass('show')) {
+        $this.removeClass('show');
+        $('.tool-bag').find('.box-char-emoji').addClass('d-none')
+    } else {
+        $('.tools button').removeClass('show')
+        $this.addClass('show');
 
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData.data;
+        $('.tool-bag').find('.box-char-emoji').removeClass('d-none')
+    }
+});
+/*************************************/
+$(document).on('submit', '#box-char-emoji', function (e) {
 
-
-        const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
-
-        for (let i = 0; i < data.length; i += 4) {
-
-            data[i] = factor * (data[i] - 128) + 128 + brightness;
-
-            data[i + 1] = factor * (data[i + 1] - 128) + 128 + brightness;
-
-            data[i + 2] = factor * (data[i + 2] - 128) + 128 + brightness;
-
-        }
-
-        ctx.putImageData(imageData, 0, 0);
-    };
-
-    /*************************************/
-
-
-
-    $('.bi-pencil-square').on('click',function (e){
-        var $this = $(this)
-        if ($this.hasClass('show'))
-        {
-            $this.removeClass('show')
-            $('.box').find('.box-char-emoji').remove()
-        }
-        else
-        {
-            $this.addClass('show')
-            var $element = ' <form id="box-char-emoji" class="box-char-emoji" style="display: flex;gap: 10px"><input type="text" name="emoji" id="sticker-text" placeholder="متن یا ایموجی را وارد کنید" required><div id="emoji-panel" style="display: none;"></div><button type="submit" id="emoji-button">اضافه کردن ایموجی</button></form>'
-            $('.box').append($element)
-            $(function () {
-                $('input[name=emoji]').emoji({
-                    fontSize: '20px'
-                });
-            })
-        }
-
-
-
-
-    })
-
-    /*************************************/
-
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-
-
-    $('body').on('submit', '#box-char-emoji', function (e) {
         e.preventDefault();
+        const inputText = $('#sticker-text').val()
 
-        const text = e.currentTarget[0].value;
-        const char = `<span class="draggable">${text}</span>`;
-        $('.box-preview').append(char);
+        const draggableText = $(`<div class="draggable-text">${inputText}</div>`);
+        $('.box-preview').append(draggableText);
 
-
-        $('.box-preview').find('.draggable').draggable({
+        draggableText.draggable({
             containment: '.box-preview',
-            drag: function (event, ui) {
-                const x = ui.position.left;
-                const y = ui.position.top;
-
-                redrawCanvas();
-            },
-            stop: function () {
-                redrawCanvas();
-            }
         });
 
-        redrawCanvas();
+
+
+
+}
+)
+
+/*************************************/
+$('.bi-scissors').on('click', function (e)
+{
+    var $this = $(this);
+    if ($this.hasClass('show')) {
+        $this.removeClass('show');
+        $('.tool-bag').find('.box-color').addClass('d-none')
+    } else {
+        $('.tools button').removeClass('show')
+        $this.addClass('show');
+
+        $('.tool-bag').find('.box-color').removeClass('d-none')
+    }
+}
+)
+document.addEventListener("DOMContentLoaded", () => {
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let currentX = 0;
+    let currentY = 0;
+
+    const selectionBox = document.createElement("div");
+    selectionBox.classList.add("selection-box");
+    document.body.appendChild(selectionBox);
+
+    const colorPicker = document.getElementById("colorPicker");
+
+
+
+    function getMousePosition(event) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+
+        return {
+            x: (event.clientX - rect.left) * scaleX,
+            y: (event.clientY - rect.top) * scaleY,
+        };
+    }
+
+
+    canvas.addEventListener("mousedown", (e) => {
+        isDragging = true;
+
+        const { x, y } = getMousePosition(e);
+        startX = x;
+        startY = y;
+
+        selectionBox.style.left = `${e.clientX}px`;
+        selectionBox.style.top = `${e.clientY}px`;
+        selectionBox.style.width = "0px";
+        selectionBox.style.height = "0px";
+        selectionBox.style.display = "block";
     });
 
 
-    function redrawCanvas() {
+    canvas.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const { x, y } = getMousePosition(e);
+        currentX = x;
+        currentY = y;
+
+        const width = Math.abs(currentX - startX);
+        const height = Math.abs(currentY - startY);
+
+        const rect = canvas.getBoundingClientRect();
+        selectionBox.style.left = `${Math.min(e.clientX, startX * (rect.width / canvas.width) + rect.left)}px`;
+        selectionBox.style.top = `${Math.min(e.clientY, startY * (rect.height / canvas.height) + rect.top)}px`;
+        selectionBox.style.width = `${width * (rect.width / canvas.width)}px`;
+        selectionBox.style.height = `${height * (rect.height / canvas.height)}px`;
+    });
 
 
-        ctx.drawImage($img, 0, 0, canvas.width, canvas.height);
+    canvas.addEventListener("mouseup", () => {
+        if (!isDragging) return;
+        isDragging = false;
+
+        const x = Math.min(startX, currentX);
+        const y = Math.min(startY, currentY);
+        const width = Math.abs(currentX - startX);
+        const height = Math.abs(currentY - startY);
 
 
-        const scaleX = canvas.width / $('.box-preview').width();
-        const scaleY = canvas.height / $('.box-preview').height();
+        const selectedColor = colorPicker.value;
+        ctx.fillStyle = selectedColor;
+        ctx.fillRect(x, y, width, height);
+
+        console.log("Selected Area:", { x, y, width, height });
+
+        selectionBox.style.display = "none";
+    });
+});
+
+function getMousePosition(event) {
+    const rect = $canvas.getBoundingClientRect();
+    const scaleX = $canvas.width / rect.width;
+    const scaleY = $canvas.height / rect.height;
+
+    return {
+        x: (event.clientX - rect.left) * scaleX,
+        y: (event.clientY - rect.top) * scaleY,
+    };
+}
+
+/*************************************/
 
 
-        $('.box-preview .draggable').each(function () {
-            const left = $(this).position().left * scaleX;
-            const top = $(this).position().top * scaleY;
-            const text = $(this).text();
 
 
-            const fontSize = $(this).css('font-size');
-            ctx.font = `${parseInt(fontSize) * scaleX}px Arial`;
-            ctx.fillStyle = 'black';
-            ctx.fillText(text, left, top + (parseInt(fontSize) * scaleY));
-        });
-    }
-    /*************************************/
-})
+
+
+
 
 
 

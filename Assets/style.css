@@ -75,3 +75,27 @@
 {
     cursor: pointer;
 }
+
+/************************/
+#canvas {
+    width: 100%;
+    height: auto;
+    border: 1px solid #eee;
+}
+
+.draggable-text
+{
+    position: absolute;
+    top: 50px;
+    left: 50px;
+    cursor: move;
+    font-size: 30px;
+    color: black;
+}
+
+
+.selection-box {
+    position: absolute;
+    border: 2px dashed #000;
+    pointer-events: none;
+}
